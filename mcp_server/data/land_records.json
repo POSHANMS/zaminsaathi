@@ -1,0 +1,31 @@
+{
+  "records": [
+    {
+      "survey_number": "142/3",
+      "village": "Kerehalli",
+      "taluk": "Hassan",
+      "registered_owner": "Ramamurthy Gowda",
+      "area_acres": 2.5,
+      "last_mutation_id": "MUT-KA-HAS-2023-067",
+      "encumbrances": "None"
+    },
+    {
+      "survey_number": "142/4",
+      "village": "Kerehalli",
+      "taluk": "Hassan",
+      "registered_owner": "Suresh Gowda",
+      "area_acres": 1.2,
+      "last_mutation_id": "MUT-KA-HAS-2024-089",
+      "encumbrances": "None"
+    },
+    {
+      "survey_number": "141",
+      "village": "Kerehalli",
+      "taluk": "Hassan",
+      "registered_owner": "Govinda Reddy",
+      "area_acres": 3.1,
+      "last_mutation_id": "MUT-KA-HAS-2021-034",
+      "encumbrances": "None"
+    }
+  ]
+}
