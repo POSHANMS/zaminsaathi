@@ -1,0 +1,18 @@
+{
+  "document_type": "SURVEY",
+  "document_id": "SRV-KA-HAS-2024-012",
+  "taluk": "Hassan",
+  "hobli": "Arasikere",
+  "village": "Kerehalli",
+  "survey_number": "142/3",
+  "total_area_acres": 2.5,
+  "boundaries": {
+    "north": "Survey No. 141 — Govinda Reddy",
+    "south": "Survey No. 143 — Public Road",
+    "east": "Survey No. 142/2 — Lakshmi Devi",
+    "west": "Survey No. 142/4 — Suresh Gowda"
+  },
+  "last_surveyed": "2019-06-10",
+  "surveyor_name": "H.K. Manjunath",
+  "issued_date": "2024-03-05"
+}
