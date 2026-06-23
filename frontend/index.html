@@ -842,15 +842,17 @@
 
       <!-- SECTION 1: UPLOAD -->
       <section id="sec-upload" class="section visible fade-in">
-        <div class="upload-zone card" id="upload-zone" onclick="if(!filesLoaded) loadDemo()">
+        <div class="upload-zone card" id="upload-zone" onclick="triggerFileInput(event)">
           <span id="upload-icon"></span>
           <h3 class="upload-title" id="upload-title">Place your land document here</h3>
           <p class="upload-sub">Supports RTC &nbsp;·&nbsp; Mutation Extract &nbsp;·&nbsp; Survey Sketch (JSON / Scan)</p>
           <div class="file-list" id="file-list" style="display:none;"></div>
+          <!-- Hidden real file input -->
+          <input type="file" id="file-input" multiple accept=".json" style="display:none;" onchange="handleFileSelect(event)">
         </div>
 
         <div class="demo-cta" id="demo-cta-wrap">
-          <button class="btn-demo" id="btn-load-demo" onclick="loadDemo()">
+          <button class="btn-demo" id="btn-load-demo" onclick="event.stopPropagation(); loadDemo()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
             Load Demo Mismatched Documents
           </button>
@@ -965,7 +967,7 @@
           <!-- Node 5: Report -->
           <div class="flow-node">
             <div class="node-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </div>
             <span class="node-label">Your Report</span>
           </div>
@@ -988,47 +990,49 @@
                   <span class="rc-title">Document Breakdown</span>
                 </div>
               </div>
-              <span class="badge badge-green">RTC</span>
+              <span class="badge badge-green" id="parser-doc-type">RTC</span>
             </div>
-            <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.65;margin-bottom:20px;">
+            <p id="parser-summary" style="font-size:0.88rem;color:var(--text-dim);line-height:1.65;margin-bottom:20px;">
               This document is your RTC — the most important land record. It shows Ramamurthy Gowda owns 2.5 acres of dry land in Survey Number 142/3 in Kerehalli village. There are no loans or legal issues on this land. This copy was printed on January 15, 2024.
             </p>
 
-            <div class="accordion-item">
-              <button class="accordion-trigger" onclick="toggleAccordion(this)">
-                Survey Number <span class="chevron">&#9660;</span>
-              </button>
-              <div class="accordion-body">Special address for land on government maps. For your land, this is <strong>142/3</strong>.</div>
-            </div>
-            <div class="accordion-item">
-              <button class="accordion-trigger" onclick="toggleAccordion(this)">
-                Owner Name <span class="chevron">&#9660;</span>
-              </button>
-              <div class="accordion-body">The person officially recognized as the legal owner right now, which is <strong>Ramamurthy Gowda</strong>.</div>
-            </div>
-            <div class="accordion-item">
-              <button class="accordion-trigger" onclick="toggleAccordion(this)">
-                Area (Acres) <span class="chevron">&#9660;</span>
-              </button>
-              <div class="accordion-body">The physical size of your land plot. It stands at <strong>2.5 acres</strong>.</div>
-            </div>
-            <div class="accordion-item">
-              <button class="accordion-trigger" onclick="toggleAccordion(this)">
-                Land Type <span class="chevron">&#9660;</span>
-              </button>
-              <div class="accordion-body"><strong>Dry Land</strong> — rain-fed rather than having custom government irrigation.</div>
-            </div>
-            <div class="accordion-item">
-              <button class="accordion-trigger" onclick="toggleAccordion(this)">
-                Encumbrances <span class="chevron">&#9660;</span>
-              </button>
-              <div class="accordion-body"><strong>None</strong> — no active bank loans or outstanding court disputes reported.</div>
-            </div>
-            <div class="accordion-item">
-              <button class="accordion-trigger" onclick="toggleAccordion(this)">
-                Issued Date <span class="chevron">&#9660;</span>
-              </button>
-              <div class="accordion-body"><strong>January 15, 2024</strong> — this copy is fairly fresh and valid to check.</div>
+            <div id="parser-accordion-container">
+              <div class="accordion-item">
+                <button class="accordion-trigger" onclick="toggleAccordion(this)">
+                  Survey Number <span class="chevron">&#9660;</span>
+                </button>
+                <div class="accordion-body">Special address for land on government maps. For your land, this is <strong>142/3</strong>.</div>
+              </div>
+              <div class="accordion-item">
+                <button class="accordion-trigger" onclick="toggleAccordion(this)">
+                  Owner Name <span class="chevron">&#9660;</span>
+                </button>
+                <div class="accordion-body">The person officially recognized as the legal owner right now, which is <strong>Ramamurthy Gowda</strong>.</div>
+              </div>
+              <div class="accordion-item">
+                <button class="accordion-trigger" onclick="toggleAccordion(this)">
+                  Area (Acres) <span class="chevron">&#9660;</span>
+                </button>
+                <div class="accordion-body">The physical size of your land plot. It stands at <strong>2.5 acres</strong>.</div>
+              </div>
+              <div class="accordion-item">
+                <button class="accordion-trigger" onclick="toggleAccordion(this)">
+                  Land Type <span class="chevron">&#9660;</span>
+                </button>
+                <div class="accordion-body"><strong>Dry Land</strong> — rain-fed rather than having custom government irrigation.</div>
+              </div>
+              <div class="accordion-item">
+                <button class="accordion-trigger" onclick="toggleAccordion(this)">
+                  Encumbrances <span class="chevron">&#9660;</span>
+                </button>
+                <div class="accordion-body"><strong>None</strong> — no active bank loans or outstanding court disputes reported.</div>
+              </div>
+              <div class="accordion-item">
+                <button class="accordion-trigger" onclick="toggleAccordion(this)">
+                  Issued Date <span class="chevron">&#9660;</span>
+                </button>
+                <div class="accordion-body"><strong>January 15, 2024</strong> — this copy is fairly fresh and valid to check.</div>
+              </div>
             </div>
           </div>
 
@@ -1042,24 +1046,26 @@
                   <span class="rc-title">Cross-Check Report</span>
                 </div>
               </div>
-              <span class="badge badge-red">1 Issue Found</span>
+              <span class="badge badge-red" id="detector-badge">1 Issue Found</span>
             </div>
 
-            <div class="discrepancy-item">
-              <div class="discrepancy-header">
-                <span class="discrepancy-field">Survey Number Mismatch</span>
-                <span class="badge badge-red">HIGH</span>
-              </div>
-              <div class="discrepancy-details">
-                <div class="detail-row"><span class="detail-label">Expected:</span><span class="detail-expected">142/3</span></div>
-                <div class="detail-row"><span class="detail-label">Found:</span><span class="detail-actual">142/4</span></div>
-              </div>
-              <div class="discrepancy-explanation">
-                The mutation document records a transfer of survey number <strong>142/4</strong>, but your RTC clearly shows Ramamurthy Gowda only owned survey number <strong>142/3</strong>. These are two <em>different</em> plots. This mismatch means the transfer document may be referring to the wrong land entirely. Do not proceed with any sale or transaction until this is resolved.
+            <div id="detector-discrepancies-container">
+              <div class="discrepancy-item">
+                <div class="discrepancy-header">
+                  <span class="discrepancy-field">Survey Number Mismatch</span>
+                  <span class="badge badge-red">HIGH</span>
+                </div>
+                <div class="discrepancy-details">
+                  <div class="detail-row"><span class="detail-label">Expected:</span><span class="detail-expected">142/3</span></div>
+                  <div class="detail-row"><span class="detail-label">Found:</span><span class="detail-actual">142/4</span></div>
+                </div>
+                <div class="discrepancy-explanation">
+                  The mutation document records a transfer of survey number <strong>142/4</strong>, but your RTC clearly shows Ramamurthy Gowda only owned survey number <strong>142/3</strong>. These are two <em>different</em> plots. This mismatch means the transfer document may be referring to the wrong land entirely. Do not proceed with any sale or transaction until this is resolved.
+                </div>
               </div>
             </div>
 
-            <div style="margin-top:12px; font-size:0.82rem; color:var(--text-dim); text-align:center;">
+            <div id="permissions-status-info" style="margin-top:12px; font-size:0.82rem; color:var(--text-dim); text-align:center;">
               Permission check: <span style="color:var(--green); font-weight:600;">&#10003; Granted</span> &nbsp;|&nbsp;
               MCP cross-check: <span style="color:var(--red); font-weight:600;">&#10007; Failed</span>
             </div>
@@ -1075,41 +1081,45 @@
                   <span class="rc-title">Your Action Plan</span>
                 </div>
               </div>
-              <span class="badge badge-amber">Action Required</span>
+              <span class="badge badge-amber" id="planner-badge">Action Required</span>
             </div>
-            <p style="font-size:0.88rem;color:var(--text-dim);line-height:1.65;margin-bottom:20px;">
+            <p id="planner-summary" style="font-size:0.88rem;color:var(--text-dim);line-height:1.65;margin-bottom:20px;">
               There is a serious mismatch in your land documents. The RTC shows survey number 142/3 but the mutation document refers to 142/4. You must visit your local Tahsildar office to get this corrected before any transaction.
             </p>
 
-            <div class="step-item">
-              <div class="step-num">1</div>
-              <div class="step-txt">Gather all original documents and make 3 sets of photocopies.</div>
-            </div>
-            <div class="step-item">
-              <div class="step-num">2</div>
-              <div class="step-txt">Visit the <strong>Tahsildar Office for Hassan Taluk</strong> and ask for the Bhoomi Monitoring Cell.</div>
-            </div>
-            <div class="step-item">
-              <div class="step-num">3</div>
-              <div class="step-txt">Tell the officer: <em>"Namaste, I have a discrepancy in my land survey numbers between my RTC and mutation document and I need to apply for a correction."</em></div>
-            </div>
-            <div class="step-item">
-              <div class="step-num">4</div>
-              <div class="step-txt">Submit a formal correction application and get an acknowledgment receipt.</div>
-            </div>
-            <div class="step-item">
-              <div class="step-num">5</div>
-              <div class="step-txt">Track your application on the Bhoomi portal.</div>
+            <div id="planner-steps-container">
+              <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-txt">Gather all original documents and make 3 sets of photocopies.</div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-txt">Visit the <strong>Tahsildar Office for Hassan Taluk</strong> and ask for the Bhoomi Monitoring Cell.</div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-txt">Tell the officer: <em>"Namaste, I have a discrepancy in my land survey numbers between my RTC and mutation document and I need to apply for a correction."</em></div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">4</div>
+                <div class="step-txt">Submit a formal correction application and get an acknowledgment receipt.</div>
+              </div>
+              <div class="step-item">
+                <div class="step-num">5</div>
+                <div class="step-txt">Track your application on the Bhoomi portal.</div>
+              </div>
             </div>
 
             <div class="sub-title">&#127970; Office to Visit</div>
-            <div class="office-badge">Tahsildar Office Hassan Taluk — apply for survey number correction</div>
+            <div class="office-badge" id="office-visit-info">Tahsildar Office Hassan Taluk — apply for survey number correction</div>
 
             <div class="sub-title">&#127760; Portal</div>
-            <a class="portal-link" href="https://landrecords.karnataka.gov.in" target="_blank" rel="noopener">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              landrecords.karnataka.gov.in
-            </a>
+            <div id="portal-link-container">
+              <a class="portal-link" href="https://landrecords.karnataka.gov.in" target="_blank" rel="noopener">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                landrecords.karnataka.gov.in
+              </a>
+            </div>
 
             <div class="sub-title">&#128203; Documents to Carry</div>
             <div class="checklist" id="checklist">
@@ -1143,7 +1153,7 @@
 
   <script>
     // ============================================================
-    // DATA
+    // DATA & FALLBACK CONSTANTS
     // ============================================================
     const DOCS_TO_CARRY = [
       "Original RTC with survey 142/3",
@@ -1158,6 +1168,63 @@
       "Permission check: GRANTED — proceeding with cross-check.\nQuerying MCP database for survey 142/3 in Hassan Taluk...\nCross-referencing Mutation Extract MUT-KA-HAS-2024-089...\n⚠ DISCREPANCY DETECTED: RTC says 142/3 but mutation says 142/4.\nSeverity: HIGH. Audit log written.",
       "Discrepancy type: SURVEY NUMBER MISMATCH (HIGH severity).\nGenerating action plan for owner in Hassan Taluk...\nOffice identified: Tahsildar Office Hassan Taluk.\nPortal: landrecords.karnataka.gov.in\nAction plan ready. Legal disclaimer appended."
     ];
+
+    const DEMO_OUTPUT = {
+      parser: {
+        document_type: "RTC",
+        document_id: "RTC-KA-HAS-2024-001",
+        summary: "This document is your RTC — the most important land record. It shows Ramamurthy Gowda owns 2.5 acres of dry land in Survey Number 142/3 in Kerehalli village. There are no loans or legal issues on this land. This copy was printed on January 15, 2024.",
+        fields_explained: {
+          survey_number: "Special address for land on government maps. For your land, this is 142/3.",
+          owner_name: "The person officially recognized as the legal owner right now, which is Ramamurthy Gowda.",
+          area_acres: "The physical size of your land plot. It stands at 2.5 acres.",
+          land_type: "Dry Land, meaning it is rain-fed rather than having custom government irrigation.",
+          encumbrances: "None, indicating there are no active bank loans or outstanding court disputes reported.",
+          issued_date: "January 15, 2024. This copy is fairly fresh and valid to check."
+        },
+        warnings: []
+      },
+      detector: {
+        document_id: "MUT-KA-HAS-2024-089",
+        permission_granted: true,
+        discrepancies_found: [
+          {
+            field_name: "survey_number",
+            expected: "142/3",
+            actual: "142/4",
+            severity: "HIGH",
+            explanation: "The mutation document records a transfer of survey number 142/4, but your RTC clearly shows Ramamurthy Gowda only owned survey number 142/3. These are two different plots. This mismatch means the transfer document may be referring to the wrong land entirely. Do not proceed with any sale or transaction until this is resolved."
+          }
+        ],
+        cross_check_passed: false
+      },
+      planner: {
+        status: "action_required",
+        summary: "There is a serious mismatch in your land documents. The RTC shows survey number 142/3 but the mutation document refers to 142/4. These are different plots. You must visit your local Tahsildar office to get this corrected before any transaction.",
+        action_steps: [
+          "Gather all original documents and make 3 sets of photocopies.",
+          "Visit the Tahsildar Office for Hassan Taluk and ask for the Bhoomi Monitoring Cell.",
+          "Tell the officer: \"Namaste, I have a discrepancy in my land survey numbers between my RTC and mutation document and I need to apply for a correction.\"",
+          "Submit a formal correction application and get an acknowledgment receipt.",
+          "Track your application on the Bhoomi portal at landrecords.karnataka.gov.in"
+        ],
+        offices_to_visit: "Tahsildar Office Hassan Taluk — apply for survey number correction",
+        portals_to_use: [
+          "Bhoomi: https://landrecords.karnataka.gov.in/"
+        ],
+        documents_to_carry: [
+          "Original RTC with survey 142/3",
+          "Mutation document MUT-KA-HAS-2024-089",
+          "Aadhaar card",
+          "Sale deed if available",
+          "3 sets of photocopies of all documents"
+        ],
+        legal_disclaimer: "This is guidance only. Consult a qualified lawyer before taking legal action."
+      }
+    };
+
+    var uploadedFilesList = [];
+    var filesLoaded = false;
 
     // ============================================================
     // PARTICLES (Dummy initialization to prevent error)
@@ -1185,18 +1252,21 @@
     // ============================================================
     // CHECKLIST
     // ============================================================
-    (function buildChecklist() {
+    function buildChecklist(docs) {
       var cl = document.getElementById('checklist');
       if (!cl) return;
       cl.innerHTML = '';
-      DOCS_TO_CARRY.forEach(function(doc, i) {
+      docs.forEach(function(doc, i) {
         var item = document.createElement('div');
         item.className = 'checklist-item';
         var id = 'chk-' + i;
         item.innerHTML = '<input type="checkbox" id="' + id + '"><label for="' + id + '">' + doc + '</label>';
         cl.appendChild(item);
       });
-    })();
+    }
+
+    // Initialize with default
+    buildChecklist(DOCS_TO_CARRY);
 
     // ============================================================
     // SECTION HELPERS
@@ -1218,10 +1288,51 @@
     // ============================================================
     // UPLOAD / DEMO LOAD
     // ============================================================
-    var filesLoaded = false;
+    function triggerFileInput(event) {
+      if (event) {
+        // Prevent click bubbling up or repeating
+        if (event.target.tagName === 'INPUT' || event.target.tagName === 'BUTTON') return;
+      }
+      document.getElementById('file-input').click();
+    }
+
+    function handleFileSelect(event) {
+      var selectedFiles = event.target.files;
+      if (!selectedFiles || selectedFiles.length === 0) return;
+
+      filesLoaded = true;
+      uploadedFilesList = Array.from(selectedFiles);
+
+      var zone = document.getElementById('upload-zone');
+      if (zone) zone.classList.add('has-files');
+
+      var title = document.getElementById('upload-title');
+      if (title) title.textContent = 'Documents Loaded Successfully';
+
+      var fl = document.getElementById('file-list');
+      if (fl) {
+        fl.style.display = 'flex';
+        fl.innerHTML = '';
+        uploadedFilesList.forEach(function(file) {
+          var sizeKB = (file.size / 1024).toFixed(1);
+          var item = document.createElement('div');
+          item.className = 'file-item';
+          item.innerHTML = '<span class="file-check">&#10003;</span><span>' + file.name + ' (' + sizeKB + ' KB)</span>';
+          fl.appendChild(item);
+        });
+      }
+
+      var demoWrap = document.getElementById('demo-cta-wrap');
+      if (demoWrap) demoWrap.style.display = 'none';
+
+      var analyseWrap = document.getElementById('analyse-wrap');
+      if (analyseWrap) analyseWrap.style.display = 'block';
+    }
 
     function loadDemo() {
       filesLoaded = true;
+      uploadedFilesList = []; // Empty list triggers fallback demo mode
+
       var zone = document.getElementById('upload-zone');
       if (zone) zone.classList.add('has-files');
 
@@ -1346,6 +1457,183 @@
     }
 
     // ============================================================
+    // RESULTS RENDER ENGINE
+    // ============================================================
+    function renderResults(data) {
+      // 1. Render Card 1 (Parser)
+      var parser = data.parser || {};
+      var parserDocType = document.getElementById('parser-doc-type');
+      if (parserDocType) parserDocType.textContent = parser.document_type || 'RTC';
+      
+      var parserSummary = document.getElementById('parser-summary');
+      if (parserSummary) parserSummary.textContent = parser.summary || 'No summary available.';
+      
+      var parserAcc = document.getElementById('parser-accordion-container');
+      if (parserAcc) {
+        parserAcc.innerHTML = '';
+        var fields = parser.fields_explained || parser.fields || {};
+        for (var key in fields) {
+          var val = fields[key];
+          var item = document.createElement('div');
+          item.className = 'accordion-item';
+          
+          var title = key.split('_').map(function(word) {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          }).join(' ');
+          
+          item.innerHTML = 
+            '<button class="accordion-trigger" onclick="toggleAccordion(this)">' +
+              title + ' <span class="chevron">&#9660;</span>' +
+            '</button>' +
+            '<div class="accordion-body">' + val + '</div>';
+          parserAcc.appendChild(item);
+        }
+      }
+
+      // 2. Render Card 2 (Detector)
+      var detector = data.detector || {};
+      var discrepancies = detector.discrepancies_found || [];
+      var detContainer = document.getElementById('detector-discrepancies-container');
+      
+      if (detContainer) {
+        detContainer.innerHTML = '';
+        if (detector.cross_check_passed || discrepancies.length === 0) {
+          detContainer.innerHTML = 
+            '<div class="clean-block">' +
+              '<div class="clean-icon">✓</div>' +
+              '<div class="clean-title">No Discrepancies Found</div>' +
+              '<div class="clean-sub">All checked values match official records.</div>' +
+            '</div>';
+          
+          var badge = document.getElementById('detector-badge');
+          if (badge) {
+            badge.className = 'badge badge-green';
+            badge.textContent = 'Passed';
+          }
+        } else {
+          var badge = document.getElementById('detector-badge');
+          if (badge) {
+            badge.className = 'badge badge-red';
+            badge.textContent = discrepancies.length + ' ' + (discrepancies.length === 1 ? 'Issue' : 'Issues') + ' Found';
+          }
+          
+          discrepancies.forEach(function(disc) {
+            var div = document.createElement('div');
+            div.className = 'discrepancy-item';
+            
+            var exp = disc.expected_value || disc.expected || 'N/A';
+            var act = disc.actual_value || disc.actual || 'N/A';
+            var expl = disc.plain_english_explanation || disc.explanation || 'No explanation provided.';
+            var fieldNameFormatted = (disc.field_name || 'Field Mismatch').split('_').map(function(word) {
+              return word.charAt(0).toUpperCase() + word.slice(1);
+            }).join(' ');
+            
+            div.innerHTML = 
+              '<div class="discrepancy-header">' +
+                '<span class="discrepancy-field">' + fieldNameFormatted + '</span>' +
+                '<span class="badge badge-red">' + (disc.severity || 'HIGH') + '</span>' +
+              '</div>' +
+               '<div class="discrepancy-details">' +
+                '<div class="detail-row"><span class="detail-label">Expected:</span><span class="detail-expected">' + exp + '</span></div>' +
+                '<div class="detail-row"><span class="detail-label">Found:</span><span class="detail-actual">' + act + '</span></div>' +
+              '</div>' +
+              '<div class="discrepancy-explanation">' + expl + '</div>';
+            detContainer.appendChild(div);
+          });
+        }
+      }
+      
+      // Update permissions and database checks info
+      var statusInfo = document.getElementById('permissions-status-info');
+      if (statusInfo) {
+        var permColor = detector.permission_granted ? 'var(--green)' : 'var(--red)';
+        var crossColor = detector.cross_check_passed ? 'var(--green)' : 'var(--red)';
+        statusInfo.innerHTML = 
+          'Permission check: <span style="color:' + permColor + '; font-weight:600;">' + (detector.permission_granted ? '✓ Granted' : '✗ Denied') + '</span> &nbsp;|&nbsp; ' +
+          'MCP cross-check: <span style="color:' + crossColor + '; font-weight:600;">' + (detector.cross_check_passed ? '✓ Passed' : '✗ Failed') + '</span>';
+      }
+
+      // 3. Render Card 3 (Planner)
+      var planner = data.planner || {};
+      var plannerBadge = document.getElementById('planner-badge');
+      if (plannerBadge) {
+        if (planner.status === 'clear') {
+          plannerBadge.className = 'badge badge-green';
+          plannerBadge.textContent = 'Clear';
+        } else {
+          plannerBadge.className = 'badge badge-amber';
+          plannerBadge.textContent = 'Action Required';
+        }
+      }
+      
+      var plannerSummary = document.getElementById('planner-summary');
+      if (plannerSummary) plannerSummary.textContent = planner.summary || 'No planning required.';
+      
+      var stepsContainer = document.getElementById('planner-steps-container');
+      if (stepsContainer) {
+        stepsContainer.innerHTML = '';
+        var steps = planner.action_steps || [];
+        steps.forEach(function(step, idx) {
+          var div = document.createElement('div');
+          div.className = 'step-item';
+          div.innerHTML = 
+            '<div class="step-num">' + (idx + 1) + '</div>' +
+            '<div class="step-txt">' + step + '</div>';
+          stepsContainer.appendChild(div);
+        });
+      }
+      
+      var officeBadge = document.getElementById('office-visit-info');
+      if (officeBadge) {
+        var offices = planner.offices_to_visit || [];
+        if (Array.isArray(offices)) {
+          officeBadge.textContent = offices.join(', ') || 'No office visit required.';
+        } else {
+          officeBadge.textContent = offices;
+        }
+      }
+      
+      var portalContainer = document.getElementById('portal-link-container');
+      if (portalContainer) {
+        portalContainer.innerHTML = '';
+        var portals = planner.portals_to_use || [];
+        if (Array.isArray(portals)) {
+          portals.forEach(function(portalStr) {
+            var match = portalStr.match(/(https?:\/\/[^\s]+)/);
+            var url = match ? match[1] : "#";
+            var name = portalStr.replace(url, "").replace(/[:-]/g, "").trim() || "Government Portal";
+            
+            var a = document.createElement('a');
+            a.className = 'portal-link';
+            a.href = url;
+            a.target = '_blank';
+            a.rel = 'noopener';
+            a.innerHTML = 
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> ' +
+              name;
+            portalContainer.appendChild(a);
+          });
+        } else if (portals && typeof portals === 'object') {
+          var name = portals.name || 'Government Portal';
+          var url = portals.url || 'https://landrecords.karnataka.gov.in';
+          var a = document.createElement('a');
+          a.className = 'portal-link';
+          a.href = url;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.innerHTML = 
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> ' +
+            name;
+          portalContainer.appendChild(a);
+        }
+      }
+      
+      // Rebuild carry docs checklist
+      var docs = planner.documents_to_carry || [];
+      buildChecklist(docs);
+    }
+
+    // ============================================================
     // MAIN ANALYSIS FLOW
     // ============================================================
     function startAnalysis() {
@@ -1353,28 +1641,94 @@
       showSection('sec-pipeline');
       resetPipeline();
 
-      // Agent 1 — speed 18ms per char
-      setAgentActive(1);
-      typeText('typed-1', 'cursor-1', 'bar-1', AGENT_TEXTS[0], 18, function() {
-        setAgentDone(1);
-        setTimeout(function() {
-          // Agent 2
-          setAgentActive(2);
-          typeText('typed-2', 'cursor-2', 'bar-2', AGENT_TEXTS[1], 18, function() {
-            setAgentDone(2);
+      // If we uploaded real files, fetch the Flask backend API at port 5000
+      if (uploadedFilesList.length > 0) {
+        var formData = new FormData();
+        uploadedFilesList.forEach(function(file) {
+          formData.append('files', file);
+        });
+
+        // Activate Parser Agent loader status
+        setAgentActive(1);
+        document.getElementById('typed-1').textContent = "Uploading documents to ZaminSaathi agents backend... Please wait.";
+
+        fetch('http://localhost:5000/api/analyse', {
+          method: 'POST',
+          body: formData
+        })
+        .then(function(res) {
+          if (!res.ok) {
+            return res.json().then(function(err) {
+              throw new Error(err.error || "Server error running ZaminSaathi agents");
+            });
+          }
+          return res.json();
+        })
+        .then(function(data) {
+          // Dynamic typewriter summaries generated using the real backend response
+          var realAgentTexts = [
+            "Reading document... Detected: " + (data.parser.document_type || "JSON") + "\n" +
+            "ID: " + (data.parser.document_id || "unknown") + "\n" +
+            "Summary: " + (data.parser.summary || ""),
+            
+            "Permission check: " + (data.detector.permission_granted ? "GRANTED" : "DENIED") + "\n" +
+            "MCP Cross-check: " + (data.detector.cross_check_passed ? "PASSED" : "FAILED") + "\n" +
+            (data.detector.cross_check_passed ? "All values match official database." : "⚠ Discrepancies found: " + data.detector.discrepancies_found.map(function(d) { return d.field_name; }).join(", ")),
+            
+            "Status: " + (data.planner.status || "action_required") + "\n" +
+            "Summary: " + (data.planner.summary || "")
+          ];
+
+          // Run typewriter animation sequence on the UI using real data
+          typeText('typed-1', 'cursor-1', 'bar-1', realAgentTexts[0], 12, function() {
+            setAgentDone(1);
             setTimeout(function() {
-              // Agent 3
-              setAgentActive(3);
-              typeText('typed-3', 'cursor-3', 'bar-3', AGENT_TEXTS[2], 18, function() {
-                setAgentDone(3);
+              setAgentActive(2);
+              typeText('typed-2', 'cursor-2', 'bar-2', realAgentTexts[1], 12, function() {
+                setAgentDone(2);
                 setTimeout(function() {
-                  showSection('sec-results');
-                }, 1000);
+                  setAgentActive(3);
+                  typeText('typed-3', 'cursor-3', 'bar-3', realAgentTexts[2], 12, function() {
+                    setAgentDone(3);
+                    setTimeout(function() {
+                      renderResults(data);
+                      showSection('sec-results');
+                    }, 1000);
+                  });
+                }, 800);
               });
             }, 800);
           });
-        }, 800);
-      });
+        })
+        .catch(function(err) {
+          console.error(err);
+          alert("ZaminSaathi Backend Error: " + err.message + "\n\nFalling back to demo mode.");
+          loadDemo();
+          startAnalysis(); // Recurse analysis in demo mode since uploadedFilesList is reset
+        });
+      } else {
+        // Run standard hardcoded demo sequence
+        setAgentActive(1);
+        typeText('typed-1', 'cursor-1', 'bar-1', AGENT_TEXTS[0], 18, function() {
+          setAgentDone(1);
+          setTimeout(function() {
+            setAgentActive(2);
+            typeText('typed-2', 'cursor-2', 'bar-2', AGENT_TEXTS[1], 18, function() {
+              setAgentDone(2);
+              setTimeout(function() {
+                setAgentActive(3);
+                typeText('typed-3', 'cursor-3', 'bar-3', AGENT_TEXTS[2], 18, function() {
+                  setAgentDone(3);
+                  setTimeout(function() {
+                    renderResults(DEMO_OUTPUT);
+                    showSection('sec-results');
+                  }, 1000);
+                });
+              }, 800);
+            });
+          }, 800);
+        });
+      }
     }
 
     // ============================================================
@@ -1382,6 +1736,7 @@
     // ============================================================
     function resetApp() {
       filesLoaded = false;
+      uploadedFilesList = [];
 
       // reset upload zone
       var zone = document.getElementById('upload-zone');
@@ -1401,6 +1756,10 @@
       
       var analyseWrap = document.getElementById('analyse-wrap');
       if (analyseWrap) analyseWrap.style.display = 'none';
+
+      // reset file input value
+      var fileInput = document.getElementById('file-input');
+      if (fileInput) fileInput.value = '';
 
       // reset accordion
       document.querySelectorAll('.accordion-body.open').forEach(function(b) { b.classList.remove('open'); });

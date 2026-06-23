@@ -3,3 +3,4 @@ mcp
 fastmcp
 python-dotenv
 flask
+flask-cors
