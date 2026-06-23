@@ -109,7 +109,22 @@ Expected JSON format:
     input_str = json.dumps(detector_result, indent=2)
 
     # Run the agent in debug mode (async wrapper)
-    events = asyncio.run(runner.run_debug(input_str))
+    import time
+    max_attempts = 5
+    events = None
+    for attempt in range(max_attempts):
+        try:
+            events = asyncio.run(runner.run_debug(input_str))
+            break
+        except Exception as e:
+            err_msg = str(e)
+            is_transient = any(term in err_msg.upper() for term in ["503", "429", "UNAVAILABLE", "EXHAUSTED", "DEMAND"])
+            if is_transient and attempt < max_attempts - 1:
+                wait_time = (attempt + 1) * 2
+                print(f"[Model Busy] planner_agent received transient error: {err_msg[:120]}. Retrying in {wait_time}s...")
+                time.sleep(wait_time)
+            else:
+                raise e
 
     # Extract response text
     text_response = ""

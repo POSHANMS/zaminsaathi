@@ -1652,60 +1652,90 @@
         setAgentActive(1);
         document.getElementById('typed-1').textContent = "Uploading documents to ZaminSaathi agents backend... Please wait.";
 
-        fetch('http://localhost:5000/api/analyse', {
-          method: 'POST',
-          body: formData
-        })
-        .then(function(res) {
-          if (!res.ok) {
-            return res.json().then(function(err) {
-              throw new Error(err.error || "Server error running ZaminSaathi agents");
-            });
-          }
-          return res.json();
-        })
-        .then(function(data) {
-          // Dynamic typewriter summaries generated using the real backend response
-          var realAgentTexts = [
-            "Reading document... Detected: " + (data.parser.document_type || "JSON") + "\n" +
-            "ID: " + (data.parser.document_id || "unknown") + "\n" +
-            "Summary: " + (data.parser.summary || ""),
-            
-            "Permission check: " + (data.detector.permission_granted ? "GRANTED" : "DENIED") + "\n" +
-            "MCP Cross-check: " + (data.detector.cross_check_passed ? "PASSED" : "FAILED") + "\n" +
-            (data.detector.cross_check_passed ? "All values match official database." : "⚠ Discrepancies found: " + data.detector.discrepancies_found.map(function(d) { return d.field_name; }).join(", ")),
-            
-            "Status: " + (data.planner.status || "action_required") + "\n" +
-            "Summary: " + (data.planner.summary || "")
-          ];
+        // Retry-aware fetch — retries up to 4 times on transient 503/429 errors
+        var maxRetries = 4;
+        var retryDelay = 5000; // 5 seconds between retries
 
-          // Run typewriter animation sequence on the UI using real data
-          typeText('typed-1', 'cursor-1', 'bar-1', realAgentTexts[0], 12, function() {
-            setAgentDone(1);
-            setTimeout(function() {
-              setAgentActive(2);
-              typeText('typed-2', 'cursor-2', 'bar-2', realAgentTexts[1], 12, function() {
-                setAgentDone(2);
-                setTimeout(function() {
-                  setAgentActive(3);
-                  typeText('typed-3', 'cursor-3', 'bar-3', realAgentTexts[2], 12, function() {
-                    setAgentDone(3);
-                    setTimeout(function() {
-                      renderResults(data);
-                      showSection('sec-results');
-                    }, 1000);
-                  });
-                }, 800);
+        function attemptFetch(attempt) {
+          fetch('http://localhost:5000/api/analyse', {
+            method: 'POST',
+            body: formData
+          })
+          .then(function(res) {
+            if (!res.ok) {
+              return res.json().then(function(errBody) {
+                var errMsg = errBody.error || "Server error running ZaminSaathi agents";
+                var isTransient = errMsg.indexOf("503") !== -1 || errMsg.indexOf("503") !== -1 ||
+                                  errMsg.indexOf("UNAVAILABLE") !== -1 || errMsg.indexOf("EXHAUSTED") !== -1 ||
+                                  errMsg.indexOf("429") !== -1 || errMsg.indexOf("demand") !== -1;
+                if (isTransient && attempt < maxRetries) {
+                  var countdown = retryDelay / 1000;
+                  document.getElementById('typed-1').textContent =
+                    "⏳ Gemini model is busy (attempt " + attempt + "/" + maxRetries + ").\n" +
+                    "Retrying in " + countdown + " seconds... Please wait.";
+                  setTimeout(function() {
+                    document.getElementById('typed-1').textContent =
+                      "🔄 Retrying analysis (attempt " + (attempt + 1) + "/" + maxRetries + ")...";
+                    // Rebuild FormData since body is consumed
+                    formData = new FormData();
+                    uploadedFilesList.forEach(function(file) {
+                      formData.append('files', file);
+                    });
+                    attemptFetch(attempt + 1);
+                  }, retryDelay);
+                } else {
+                  throw new Error(errMsg);
+                }
               });
-            }, 800);
+            }
+            return res.json();
+          })
+          .then(function(data) {
+            if (!data) return; // skip if we're in retry wait
+            // Dynamic typewriter summaries generated using the real backend response
+            var realAgentTexts = [
+              "Reading document... Detected: " + (data.parser.document_type || "JSON") + "\n" +
+              "ID: " + (data.parser.document_id || "unknown") + "\n" +
+              "Summary: " + (data.parser.summary || ""),
+
+              "Permission check: " + (data.detector.permission_granted ? "GRANTED" : "DENIED") + "\n" +
+              "MCP Cross-check: " + (data.detector.cross_check_passed ? "PASSED" : "FAILED") + "\n" +
+              (data.detector.cross_check_passed ? "All values match official database." : "⚠ Discrepancies found: " + data.detector.discrepancies_found.map(function(d) { return d.field_name; }).join(", ")),
+
+              "Status: " + (data.planner.status || "action_required") + "\n" +
+              "Summary: " + (data.planner.summary || "")
+            ];
+
+            // Run typewriter animation sequence on the UI using real data
+            typeText('typed-1', 'cursor-1', 'bar-1', realAgentTexts[0], 12, function() {
+              setAgentDone(1);
+              setTimeout(function() {
+                setAgentActive(2);
+                typeText('typed-2', 'cursor-2', 'bar-2', realAgentTexts[1], 12, function() {
+                  setAgentDone(2);
+                  setTimeout(function() {
+                    setAgentActive(3);
+                    typeText('typed-3', 'cursor-3', 'bar-3', realAgentTexts[2], 12, function() {
+                      setAgentDone(3);
+                      setTimeout(function() {
+                        renderResults(data);
+                        showSection('sec-results');
+                      }, 1000);
+                    });
+                  }, 800);
+                });
+              }, 800);
+            });
+          })
+          .catch(function(err) {
+            console.error(err);
+            alert("ZaminSaathi Backend Error: " + err.message + "\n\nFalling back to demo mode.");
+            loadDemo();
+            startAnalysis();
           });
-        })
-        .catch(function(err) {
-          console.error(err);
-          alert("ZaminSaathi Backend Error: " + err.message + "\n\nFalling back to demo mode.");
-          loadDemo();
-          startAnalysis(); // Recurse analysis in demo mode since uploadedFilesList is reset
-        });
+        }
+
+        attemptFetch(1);
       } else {
         // Run standard hardcoded demo sequence
         setAgentActive(1);
