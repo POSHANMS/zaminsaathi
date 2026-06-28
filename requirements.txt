@@ -1,4 +1,5 @@
 google-adk
+google-generativeai
 mcp
 fastmcp
 python-dotenv
