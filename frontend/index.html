@@ -132,14 +132,17 @@
       grid-template-columns: 4.5fr 5.5fr;
       gap: 50px;
     }
-    /* When results section is active, expand layout to full page width and hide story side */
-    .app-layout:has(#sec-results.visible) {
+    /* When results or pipeline section is active, expand layout to full page width and hide story side */
+    .app-layout:has(#sec-results.visible),
+    .app-layout:has(#sec-pipeline.visible) {
       grid-template-columns: 1fr;
     }
-    .app-layout:has(#sec-results.visible) .story-side {
+    .app-layout:has(#sec-results.visible) .story-side,
+    .app-layout:has(#sec-pipeline.visible) .story-side {
       display: none;
     }
-    .app-layout:has(#sec-results.visible) .tool-side {
+    .app-layout:has(#sec-results.visible) .tool-side,
+    .app-layout:has(#sec-pipeline.visible) .tool-side {
       padding-right: 0;
     }
     @media (max-width: 992px) {
@@ -385,6 +388,8 @@
       justify-content: space-between;
       width: 100%;
       gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 10px;
     }
     @media (max-width: 1024px) {
       .pipeline-flow {
