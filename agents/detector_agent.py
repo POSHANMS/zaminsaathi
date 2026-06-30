@@ -151,7 +151,16 @@ if __name__ == "__main__":
     for fname in ["rtc_001.json", "mutation_001.json"]:
         with open(os.path.join(project_root, "sample_docs", fname)) as f:
             all_raw.append(json.load(f))
-    from agents.parser_agent import parse_document
-    parsed = parse_document(all_raw[0])
-    result = detect_discrepancies(parsed, all_raw)
+    # Mock parsed document to avoid making a parser API call in detector test
+    mock_parsed = {
+        "document_type": "RTC",
+        "document_id": "RTC-KA-HAS-2024-001",
+        "summary": "Mock parsed document for testing detector.",
+        "fields_explained": {
+            "survey_number": "142/3",
+            "owner_name": "Ramamurthy Gowda"
+        },
+        "warnings": []
+    }
+    result = detect_discrepancies(mock_parsed, all_raw)
     print(json.dumps(result, indent=2))

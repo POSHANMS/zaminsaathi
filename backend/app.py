@@ -36,7 +36,10 @@ def analyse():
         raw_docs = []
         for file in uploaded_files:
             file_content = file.read().decode('utf-8')
-            raw_docs.append(json.loads(file_content))
+            try:
+                raw_docs.append(json.loads(file_content))
+            except json.JSONDecodeError:
+                return jsonify({"error": f"Invalid JSON format in file '{file.filename}'. Please upload valid JSON documents."}), 400
 
         if not raw_docs:
             return jsonify({"error": "No valid JSON documents provided."}), 400
